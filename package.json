@@ -1,0 +1,14 @@
+{
+  "name": "team-project-backend",
+  "version": "0.0.1",
+  "description": "The backend implementation for the ATS System",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "author": "th1rt33n",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.17.1"
+  }
+}
