@@ -1,5 +1,6 @@
 // Initialisation of Modules and Express server
 const express = require('express');
+<<<<<<< HEAD
 const SHA256 = require('crypto-js/sha256');
 const mongoose = require('mongoose');
 const passport = require('passport');
@@ -8,7 +9,10 @@ const session = require('express-session');
 const bodyParser = require('body-parser');
 const User =  require('./schemas/User');
 
+=======
+>>>>>>> 3004ae4d99c30dfe96e468edabcd7b8b522d388d
 const app = express();
+const MysqlConnection = require('./classes/MysqlConnection.js');
 
 // Initialise environment variables
 require('dotenv').config();
@@ -27,6 +31,7 @@ passport.use(new LocalStrategy((username, password, done) => {
 	})
 }));
 
+<<<<<<< HEAD
 passport.serializeUser(function(user, done) {
   done(null, user.id);
 });
@@ -36,6 +41,11 @@ passport.deserializeUser(function(id, done) {
     done(err, user);
   });
 });
+=======
+// Create a Connection to the MySQL Database
+var conn = new MysqlConnection();
+conn.init();
+>>>>>>> 3004ae4d99c30dfe96e468edabcd7b8b522d388d
 
 // Connect to MongoDB
 mongoose.connect(`mongodb://${process.env.DB_HOST}/${process.env.DB_NAME}`, { useNewUrlParser: true, useUnifiedTopology: true });
@@ -50,6 +60,7 @@ app.use(passport.session());
 // An example GET request sending plain text
 app.get('/', (req, res) => {
 	res.send("Backend for ATS System");
+  conn.query("SELECT * FROM blanks");
 });
 
 // Add a New User
