@@ -83,6 +83,12 @@ app.get('/failed', (req, res) => {
 	res.send("Failure!");
 })
 
+// Get all the blanks
+app.get('/blanks', (req, res) => {
+	res.send("Backend for ATS System");
+  conn.query("SELECT * FROM blanks");
+});
+
 // Server setup to listen on a predefined port
 app.listen(process.env.PORT, process.env.HOST);
 console.log(`Listening on Port: ${process.env.PORT} and Host: ${process.env.HOST}`);
