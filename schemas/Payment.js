@@ -2,13 +2,16 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 const Payment = new Schema({
-  Paymentname: String,
-  password: String,
-  access: ["ADMIN", "MANAGER", "AGENT"]
+  type: {
+    type: String,
+    enum: ["CASH", "CARD"],
+    default: "CASH"
+  },
+  cardNumber: String,
+  expiryDate: String,
+  cvc: String,
+  issuer: String,
+  customerID: { type: mongoose.Schema.Types.ObjectId, ref: 'Customer' }
 });
-
-Payment.methods.validPassword = function(password) {
-  return this.password == password;
-}
 
 module.exports = mongoose.model("Payment", Payment);

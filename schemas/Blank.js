@@ -9,7 +9,8 @@ const Blank = new Schema({
   },
   number: Number,
   isValid: Boolean,
-  AgentID: { type: mongoose.Schema.Types.ObjectId, ref: 'Agent' }
+  AgentID: { type: mongoose.Schema.Types.ObjectId, ref: 'Agent' },
+  sold: { type: Boolean, default: false }
 });
 
 module.exports = mongoose.model("Blank", Blank);
