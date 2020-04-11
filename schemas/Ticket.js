@@ -6,7 +6,7 @@ const Ticket = new Schema({
   departure: String,
   destination: String,
   saleDate: Date,
-  blankID: { type: mongoose.Schema.Types.ObjectId, ref: 'Blank' },
+  blankIDs: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Blank' }],
   customerID: { type: mongoose.Schema.Types.ObjectId, ref: 'Customer' }
 });
 
