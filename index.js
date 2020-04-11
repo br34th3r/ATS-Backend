@@ -256,7 +256,7 @@ app.post('/globalDomesticSalesReport', (req, res) => {
 });
 
 // Add commission rate
-app.post('/addCommisionRate', (req, res) => {
+app.post('/addCommissionRate', (req, res) => {
 	if (req.query.amount && req.query.blankType) {
 		let newCommission = new Commission({
 			amount: req.query.amount,
