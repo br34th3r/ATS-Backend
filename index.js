@@ -6,6 +6,7 @@ const passport = require('passport');
 const LocalStrategy = require('passport-local').Strategy;
 const session = require('express-session');
 const bodyParser = require('body-parser');
+const spawn = require('child_process').spawn;
 
 // Define Schemas
 const User =  require('./schemas/User');
@@ -53,7 +54,11 @@ db.once('open', function() {
 });
 
 // Express Middleware Initialisation
-app.use(session({ secret: "th1rt33n" }));
+app.use(session({
+	secret: "th1rt33n",
+	resave: true,
+	saveUninitialized: true
+}));
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(passport.initialize());
 app.use(passport.session());
@@ -90,7 +95,6 @@ app.get('/failed', (req, res) => {
 
 // Get all the blanks
 app.get('/blanks', (req, res) => {
-	console.log("Returning all Blanks");
 	Blank.find({}, (err, docs) => {
 		if (err) { res.send(err); }
 		res.send(docs);
@@ -100,18 +104,18 @@ app.get('/blanks', (req, res) => {
 
 // Add a Blank
 app.post('/addBlank', (req, res) => {
-	console.log(req.query);
-	if (req.query.type && req.query.description) {
-		let newBlank = new Blank({
-			type: req.query.type,
-		  description: req.query.description,
-		  isValid: true,
-		  AgentID: null
-		});
+	if (req.query.type && req.query.amount) {
+		for (var i = parseInt(req.query.amount); i > 0; i--) {
+			let newBlank = new Blank({
+				type: req.query.type,
+			  isValid: true,
+			  AgentID: null
+			});
 
-		newBlank.save();
-		res.send("Blank Added!");
-		console.log("Added Blank!");
+			newBlank.save();
+		}
+		res.send("Blank(s) Added!");
+		console.log("Added Blank(s)!");
 	}
 });
 
@@ -129,6 +133,17 @@ app.delete('/removeBlank/:blankID', (req, res) => {
 			}
 		}
 	});
+});
+
+// Bulk Remove Blanks
+app.delete('/removeBlanks/:start/:end', (req, res) => {
+	for (var i = parseInt(req.params.start); i <= parseInt(req.params.end); i++) {
+		Blank.findOneAndRemove({ number: i }, (err, offer) => {
+			if (err) throw err;
+		});
+	}
+	res.send("Removed Blanks!");
+	console.log("Removed Blanks!");
 });
 
 // Get blanks by a type
@@ -216,7 +231,7 @@ app.post('/addSoldTicket', (req, res) => {
 		  departure: req.query.departure,
 		  destination: req.query.destination,
 		  saleDate: req.query.saleDate,
-		  blankID: req.query.blankID,
+		  blankID: req.query.blankIDs,
 		  customerID: req.query.customerID
 		});
 
@@ -276,8 +291,45 @@ app.patch('/editCommissionRate', (req, res) => {
 	res.send("Updated Commission Rate!");
 });
 
+app.get('/database/backup', (req, res) => {
+	var datetime = Date.now();
+	var args = ['--db', 'ats-db', '--out', datetime ]
+      , mongodump = spawn('/usr/local/bin/mongodump', args);
+  mongodump.stdout.on('data', function (data) {
+		console.log("Backed Up!");
+  });
+  mongodump.stderr.on('data', function (data) {
+    console.log('MongoDump Error: ' + data);
+  });
+  mongodump.on('exit', function (code) {
+    console.log('mongodump exited with code ' + code);
+  });
+	res.send("Finished Backing Up!");
+});
+
+app.get('/database/restore/:backup', (req, res) => {
+	var args = [ req.params.backup + "/" ]
+      , mongodump = spawn('/usr/local/bin/mongorestore', args);
+  mongodump.stdout.on('data', function (data) {
+		console.log("Restored!");
+  });
+  mongodump.stderr.on('data', function (data) {
+    console.log('MongoRestore Error: ' + data);
+  });
+  mongodump.on('exit', function (code) {
+    console.log('mongorestore exited with code ' + code);
+  });
+	res.send("Finished Restoring!");
+});
+
+app.get('/ticket/:ticketID/refund', (req, res) => {
+	Ticket.findById(req.params.ticketID, (err, doc) => {
+		console.log("Ticket");
+		res.send("Ticket");
+	});
+});
+
 // TO DO'S
-// Back up and restore db
 // Ability to print report
 // Refund a ticket, data entered and saved correctly in a log file not DB (not sure what to do for that)
 
