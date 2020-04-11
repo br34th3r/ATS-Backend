@@ -2,9 +2,12 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 const Ticket = new Schema({
-  Ticketname: String,
-  password: String,
-  access: ["ADMIN", "MANAGER", "AGENT"]
+  isValid: Boolean,
+  departure: String,
+  destination: String,
+  saleDate: Date,
+  blankID: { type: mongoose.Schema.Types.ObjectId, ref: 'Blank' },
+  customerID: { type: mongoose.Schema.Types.ObjectId, ref: 'Customer' }
 });
 
 Ticket.methods.validPassword = function(password) {

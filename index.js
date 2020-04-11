@@ -11,6 +11,8 @@ const bodyParser = require('body-parser');
 const User =  require('./schemas/User');
 const Blank = require('./schemas/Blank');
 const Customer = require('./schemas/Customer');
+const Ticket = require('./schemas/Ticket');
+const Commission = require('./schemas/Commission');
 
 // Start Express Server Instance
 const app = express();
@@ -208,7 +210,19 @@ app.patch('/customers/:customerID/discount/:discountType', (req, res) => {
 
 // Record a sold ticket
 app.post('/addSoldTicket', (req, res) => {
-	console.log("Record sold ticket");
+	if (req.query.departure && req.query.destination && req.query.saleDate && req.query.blankID && req.query.customerID) {
+		let newTicket = new Ticket({
+			isValid: true,
+		  departure: req.query.departure,
+		  destination: req.query.destination,
+		  saleDate: req.query.saleDate,
+		  blankID: req.query.blankID,
+		  customerID: req.query.customerID
+		});
+
+		newTicket.save();
+		res.json("New Ticket Added!");
+	}
 });
 
 // Generate a stock turnover report
@@ -243,12 +257,23 @@ app.post('/globalDomesticSalesReport', (req, res) => {
 
 // Add commission rate
 app.post('/addCommisionRate', (req, res) => {
-	console.log("Add commission rate");
+	if (req.query.amount && req.query.blankType) {
+		let newCommission = new Commission({
+			amount: req.query.amount,
+			blankType: req.query.blankType
+		});
+
+		newCommission.save();
+		console.log("Added New Commission!");
+		res.send("Added new Commission!");
+	}
 });
 
 // Edit commission rate
 app.patch('/editCommissionRate', (req, res) => {
-	console.log("Edit commission rate");
+	Commission.updateOne({ blankType: req.query.blankType }, { amount: req.query.amount });
+	console.log("Updated Commission Rate!");
+	res.send("Updated Commission Rate!");
 });
 
 // TO DO'S
