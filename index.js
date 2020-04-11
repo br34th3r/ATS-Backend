@@ -6,8 +6,13 @@ const passport = require('passport');
 const LocalStrategy = require('passport-local').Strategy;
 const session = require('express-session');
 const bodyParser = require('body-parser');
-const User =  require('./schemas/User');
 
+// Define Schemas
+const User =  require('./schemas/User');
+const Blank = require('./schemas/Blank');
+const Customer = require('./schemas/Customer');
+
+// Start Express Server Instance
 const app = express();
 
 // Initialise environment variables
@@ -40,18 +45,16 @@ passport.deserializeUser(function(id, done) {
 // Connect to MongoDB
 mongoose.connect(`mongodb://${process.env.DB_HOST}/${process.env.DB_NAME}`, { useNewUrlParser: true, useUnifiedTopology: true });
 const db = mongoose.connection;
+db.on('error', console.error.bind(console, 'Database Connection Error:'));
+db.once('open', function() {
+  console.log("Database Connection Established!");
+});
 
 // Express Middleware Initialisation
 app.use(session({ secret: "th1rt33n" }));
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(passport.initialize());
 app.use(passport.session());
-
-// An example GET request sending plain text
-app.get('/', (req, res) => {
-	res.send("Backend for ATS System");
-  conn.query("SELECT * FROM blanks");
-});
 
 // Add a New User
 app.post('/addUser', (req, res) => {
@@ -74,70 +77,133 @@ app.post('/login', passport.authenticate('local', {
 }));
 
 app.get('/success', (req, res) => {
-	console.log("S");
+	console.log("Successful Login!");
 	res.send("Success!");
 });
 
 app.get('/failed', (req, res) => {
-	console.log("F");
+	console.log("Failed Login!");
 	res.send("Failure!");
 })
 
-// Get all the blanks 
+// Get all the blanks
 app.get('/blanks', (req, res) => {
-	res.send("All the blanks");
-  //conn.query("SELECT * FROM blanks");
+	console.log("Returning all Blanks");
+	Blank.find({}, (err, docs) => {
+		if (err) { res.send(err); }
+		res.send(docs);
+		console.log("Blanks Returned!");
+	});
 });
 
 // Add a Blank
 app.post('/addBlank', (req, res) => {
-	console.log("Add a blank");
+	console.log(req.query);
+	if (req.query.type && req.query.description) {
+		let newBlank = new Blank({
+			type: req.query.type,
+		  description: req.query.description,
+		  isValid: true,
+		  AgentID: null
+		});
+
+		newBlank.save();
+		res.send("Blank Added!");
+		console.log("Added Blank!");
+	}
 });
 
 // Remove a Blank
-app.delete('/removeBlank/:blankdID', (req, res) => {
-	console.log("Removes a blank");
-	// Important can't remove blank that is assigned to agent
+app.delete('/removeBlank/:blankID', (req, res) => {
+	Blank.findOne({ _id: req.params.blankID }, (err, doc) => {
+		if (err) throw err;
+		if (doc != []) {
+			if (doc.AgentID == null) {
+				Blank.findByIdAndRemove({_id: req.params.blankID}, (err, offer) => {
+					if (err) throw err;
+					console.log("Blank Removed!");
+					res.send("Blank Removed!");
+				});
+			}
+		}
+	});
 });
 
 // Get blanks by a type
 app.get('/blanks/type/:type', (req, res) => {
-	res.send("Get blanks by a type");
+	Blank.find({ type: req.params.type }, (err, docs) => {
+		if (err) throw err;
+		res.json(docs);
+		console.log("Sent Blanks of Type");
+	});
 });
 
 // Get a Blank
 app.get('/blanks/:blankID', (req, res) => {
-	res.send("Get blank");
+	Blank.findById(req.params.blankID, (err, doc) => {
+		if (err) throw err;
+		res.json(doc);
+		console.log("Found Blank by ID");
+	});
 });
 
 // Assign/Reassign a Blank
-app.patch('/blanks/:blankID', (req, res) => {
-	console.log("Assign a Blank to a TA");
+app.patch('/blanks/:blankID/assign/:agentID', (req, res) => {
+	Blank.updateOne({ _id: req.params.blankID }, { AgentID: req.params.agentID });
+	res.send("Assigned Blank to Agent!");
+	console.log("Assigned Blank to Agent!")
 });
 
 // Get Blanks assigned to the travel agent
-app.get('/:travelAgent/blanks', (req, res) => {
-	res.send("Get travel agent's blanks");
+app.get('/:agentID/blanks', (req, res) => {
+	Blank.find({ AgentID: req.params.agentID }, (err, docs) => {
+		if (err) throw err;
+		res.json(docs);
+		console.log("Sent Agent Blanks!");
+	});
 });
 
 // Create a customer account
 app.post('/addCustomer', (req, res) => {
-	console.log("Create a customer account");
+	if (req.query.name && req.query.surname && req.query.alias && req.query.email) {
+		let newCustomer = new Customer({
+			name: req.query.name,
+		  surname: req.query.surname,
+		  alias: req.query.alias,
+			customerStatus: false,
+			email: req.query.email,
+			payments: [],
+			balance: 0
+		});
+
+		newCustomer.save();
+		res.json("New Customer Added!");
+	}
 });
 
 // Get all the customers
 app.get('/customers', (req, res) => {
-	console.log("Get all customers");
+	Customer.find({}, (err, docs) => {
+		if (err) throw err;
+		res.send(docs);
+		console.log("Returned All Customers!");
+	});
 });
 
 // Get a customer
 app.get('/customers/:customerID', (req, res) => {
-	console.log("Get a customer");
+	Customer.findById(req.params.customerID, (err, doc) => {
+		if (err) throw err;
+		res.json(doc);
+		console.log("Returned Customer by ID");
+	});
 });
 
 // Edit discount plan
-app.patch('/customers/:customerID', (req, res) => {
-	console.log("Edit discount plan");
+app.patch('/customers/:customerID/discount/:discountType', (req, res) => {
+	Customer.updateOne({ _id: req.params.customerID }, { discountStatus: req.params.discountType });
+	res.send("Updated Customer Discount Status!");
+	console.log("Updated Customer Discount Status!");
 });
 
 // Record a sold ticket

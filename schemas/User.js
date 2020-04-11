@@ -4,7 +4,11 @@ const Schema = mongoose.Schema;
 const User = new Schema({
   username: String,
   password: String,
-  access: ["ADMIN", "MANAGER", "AGENT"]
+  access: {
+    type: String,
+    enum: ["ADMIN", "MANAGER", "AGENT"],
+    default: "AGENT"
+  }
 });
 
 User.methods.validPassword = function(password) {
