@@ -6,6 +6,7 @@ const passport = require('passport');
 const LocalStrategy = require('passport-local').Strategy;
 const session = require('express-session');
 const bodyParser = require('body-parser');
+const spawn = require('child_process').spawn;
 
 // Define Schemas
 const User =  require('./schemas/User');
@@ -53,10 +54,62 @@ db.once('open', function() {
 });
 
 // Express Middleware Initialisation
-app.use(session({ secret: "th1rt33n" }));
+app.use(session({
+	secret: "th1rt33n",
+	resave: true,
+	saveUninitialized: true
+}));
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(passport.initialize());
 app.use(passport.session());
+
+// Authentication functions for Individual Users
+function isAuth(req, res, next) {
+	if(req.session.passport){
+		next();
+	} else {
+		res.send("Failure Unauthorised!");
+	}
+}
+
+function isAgent(req, res, next) {
+	User.findById(req.session.passport.user, (err, doc) => {
+		if (err) throw err;
+		if (doc.access == "AGENT") {
+			next();
+		} else {
+			res.send("Failure, Unauthorised Access!");
+		}
+	});
+}
+
+function isManager(req, res, next) {
+	User.findById(req.session.passport.user, (err, doc) => {
+		if (err) throw err;
+		if (doc.access == "MANAGER") {
+			next();
+		} else {
+			res.send("Failure, Unauthorised Access!");
+		}
+	});
+}
+
+function isAdmin(req, res, next) {
+	User.findById(req.session.passport.user, (err, doc) => {
+		if (err) throw err;
+		console.log(doc);
+		if (doc.access == "ADMIN") {
+			next();
+		} else {
+			res.send("Failure, Unauthorised Access!");
+		}
+	});
+}
+
+app.get('/', (req, res) => {
+	console.log(req.session);
+	res.send(req.session);
+});
 
 // Add a New User
 app.post('/addUser', (req, res) => {
@@ -90,7 +143,6 @@ app.get('/failed', (req, res) => {
 
 // Get all the blanks
 app.get('/blanks', (req, res) => {
-	console.log("Returning all Blanks");
 	Blank.find({}, (err, docs) => {
 		if (err) { res.send(err); }
 		res.send(docs);
@@ -100,18 +152,19 @@ app.get('/blanks', (req, res) => {
 
 // Add a Blank
 app.post('/addBlank', (req, res) => {
-	console.log(req.query);
-	if (req.query.type && req.query.description) {
-		let newBlank = new Blank({
-			type: req.query.type,
-		  description: req.query.description,
-		  isValid: true,
-		  AgentID: null
-		});
+	if (req.query.type && req.query.start && req.query.end) {
+		for (var i = parseInt(req.query.end); i > req.query.start; i--) {
+			let newBlank = new Blank({
+				type: req.query.type,
+			  isValid: true,
+			  AgentID: null,
+				number: i
+			});
 
-		newBlank.save();
-		res.send("Blank Added!");
-		console.log("Added Blank!");
+			newBlank.save();
+		}
+		res.send("Blank(s) Added!");
+		console.log("Added Blank(s)!");
 	}
 });
 
@@ -129,6 +182,17 @@ app.delete('/removeBlank/:blankID', (req, res) => {
 			}
 		}
 	});
+});
+
+// Bulk Remove Blanks
+app.delete('/removeBlanks/:start/:end', (req, res) => {
+	for (var i = parseInt(req.params.start); i <= parseInt(req.params.end); i++) {
+		Blank.findOneAndRemove({ number: i }, (err, offer) => {
+			if (err) throw err;
+		});
+	}
+	res.send("Removed Blanks!");
+	console.log("Removed Blanks!");
 });
 
 // Get blanks by a type
@@ -150,10 +214,12 @@ app.get('/blanks/:blankID', (req, res) => {
 });
 
 // Assign/Reassign a Blank
-app.patch('/blanks/:blankID/assign/:agentID', (req, res) => {
-	Blank.updateOne({ _id: req.params.blankID }, { AgentID: req.params.agentID });
-	res.send("Assigned Blank to Agent!");
-	console.log("Assigned Blank to Agent!")
+app.patch('/blanks/:start/:end/assign/:agentID', (req, res) => {
+	for (var i = parseInt(req.params.end); i >= parseInt(req.params.start); i--) {
+		Blank.updateOne({ number: i }, { AgentID: req.params.agentID });
+	}
+	res.send("Assigned Blank(s) to Agent!");
+	console.log("Assigned Blank(s) to Agent!")
 });
 
 // Get Blanks assigned to the travel agent
@@ -211,17 +277,25 @@ app.patch('/customers/:customerID/discount/:discountType', (req, res) => {
 // Record a sold ticket
 app.post('/addSoldTicket', (req, res) => {
 	if (req.query.departure && req.query.destination && req.query.saleDate && req.query.blankID && req.query.customerID) {
-		let newTicket = new Ticket({
-			isValid: true,
-		  departure: req.query.departure,
-		  destination: req.query.destination,
-		  saleDate: req.query.saleDate,
-		  blankID: req.query.blankID,
-		  customerID: req.query.customerID
-		});
+		Blank.findById(req.query.blankID, (err, doc) => {
+			if (err) throw err;
+			if(doc.agentID != null) {
+				let newTicket = new Ticket({
+					isValid: true,
+				  departure: req.query.departure,
+				  destination: req.query.destination,
+				  saleDate: req.query.saleDate,
+				  blankID: req.query.blankID,
+				  customerID: req.query.customerID
+				});
 
-		newTicket.save();
-		res.json("New Ticket Added!");
+				newTicket.save();
+				Blank.updateOne({ _id: doc._id }, { sold: true });
+				res.json("New Ticket Added!");
+			} else {
+				res.json("Blank Cannot be Sold as it Has Not Been Assigned")
+			}
+		});
 	}
 });
 
@@ -276,10 +350,49 @@ app.patch('/editCommissionRate', (req, res) => {
 	res.send("Updated Commission Rate!");
 });
 
+app.get('/database/backup', (req, res) => {
+	var datetime = Date.now();
+	var args = ['--db', 'ats-db', '--out', datetime ]
+      , mongodump = spawn('/usr/local/bin/mongodump', args);
+  mongodump.stdout.on('data', function (data) {
+		console.log("Backed Up!");
+  });
+  mongodump.stderr.on('data', function (data) {
+    console.log('MongoDump Error: ' + data);
+  });
+  mongodump.on('exit', function (code) {
+    console.log('mongodump exited with code ' + code);
+  });
+	res.send("Finished Backing Up!");
+});
+
+app.get('/database/restore/:backup', (req, res) => {
+	var args = [ req.params.backup + "/" ]
+      , mongodump = spawn('/usr/local/bin/mongorestore', args);
+  mongodump.stdout.on('data', function (data) {
+		console.log("Restored!");
+  });
+  mongodump.stderr.on('data', function (data) {
+    console.log('MongoRestore Error: ' + data);
+  });
+  mongodump.on('exit', function (code) {
+    console.log('mongorestore exited with code ' + code);
+  });
+	res.send("Finished Restoring!");
+});
+
+app.get('/ticket/:ticketID/refund', (req, res) => {
+	Ticket.findById(req.params.ticketID, (err, doc) => {
+		console.log("Ticket");
+		res.send("Ticket");
+	});
+});
+
 // TO DO'S
-// Back up and restore db
 // Ability to print report
 // Refund a ticket, data entered and saved correctly in a log file not DB (not sure what to do for that)
+// Adding new payment Type
+//
 
 // Server setup to listen on a predefined port
 app.listen(process.env.PORT, process.env.HOST);
