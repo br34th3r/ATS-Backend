@@ -16,9 +16,14 @@ module.exports = function(app) {
   });
 
   // Edit commission rate
-  app.patch('/editCommissionRate', (req, res) => {
-  	Commission.findOneAndUpdate({ blankType: req.query.blankType }, { amount: req.query.amount });
-  	console.log("Updated Commission Rate!");
-  	res.send("Updated Commission Rate!");
+  app.post('/editCommissionRate', (req, res) => {
+		Commission.findOneAndUpdate({ blankType: req.query.blankType }, { amount: req.query.amount }, function(err, result) {
+			if (err) {
+				res.send(err);
+			} else {
+				res.send(result);
+				console.log("Updated Commission Rate!");
+			}
+		});
   });
 }
