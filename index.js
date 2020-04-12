@@ -340,6 +340,9 @@ app.post('/addSoldTicket', (req, res) => {
 												res.send("Error, Exchange Rate not Found!");
 											}
 										});
+
+										blank.sold = true;
+										blank.save();
 									} else {
 										res.send("Error, Blank not Found!");
 									}
@@ -460,9 +463,6 @@ app.post('/ticket/:ticketID/refund', (req, res) => {
 		}
 	});
 });
-
-// TO DO'S
-// Ability to print report
 
 // Server setup to listen on a predefined port
 app.listen(process.env.PORT, process.env.HOST);
