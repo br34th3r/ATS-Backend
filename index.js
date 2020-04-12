@@ -392,7 +392,7 @@ app.post('/globalDomesticSalesReport', (req, res) => {
 });
 
 // Add commission rate
-app.post('/addCommissionRate', (req, res) => {
+app.post('/addCommisionRate', (req, res) => {
 	if (req.query.amount && req.query.blankType) {
 		let newCommission = new Commission({
 			amount: req.query.amount,
@@ -463,9 +463,6 @@ app.post('/ticket/:ticketID/refund', (req, res) => {
 
 // TO DO'S
 // Ability to print report
-// Refund a ticket, data entered and saved correctly in a log file not DB (not sure what to do for that)
-// Adding new payment Type
-//
 
 // Server setup to listen on a predefined port
 app.listen(process.env.PORT, process.env.HOST);
