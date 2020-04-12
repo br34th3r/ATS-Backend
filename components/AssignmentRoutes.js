@@ -17,7 +17,7 @@ module.exports = function(app) {
   });
 
   // Get Blanks assigned to the travel agent
-  app.get('/:agentID/blanks', (req, res) => {
+  app.get('/blanks/getAssigned/:agentID', (req, res) => {
   	Blank.find({ AgentID: req.params.agentID }, (err, docs) => {
   		if (err) throw err;
   		res.json(docs);

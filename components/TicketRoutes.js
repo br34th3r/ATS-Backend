@@ -72,7 +72,7 @@ module.exports = function(app) {
   	}
   });
 
-  app.post('/ticket/:ticketID/refund', (req, res) => {
+  app.post('/refundSoldTicket/:ticketID', (req, res) => {
   	Ticket.findById(req.params.ticketID, (err, ticket) => {
   		if (err) throw err;
   		if (ticket != null) {

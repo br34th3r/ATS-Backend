@@ -29,7 +29,7 @@ module.exports = function(app) {
   });
 
   // Get a customer
-  app.get('/customers/:customerID', (req, res) => {
+  app.get('/customers/getById/:customerID', (req, res) => {
   	Customer.findById(req.params.customerID, (err, doc) => {
   		if (err) throw err;
   		res.json(doc);
@@ -38,7 +38,7 @@ module.exports = function(app) {
   });
 
   // Edit discount plan
-  app.post('/customers/:customerID/discount/:discountType', (req, res) => {
+  app.post('/customers/editDiscount/:customerID/discount/:discountType', (req, res) => {
 		Customer.findOneAndUpdate({ _id: req.params.customerID }, { discountStatus: req.params.discountType }, function(err, result) {
 			if (err) {
 				res.send(err);

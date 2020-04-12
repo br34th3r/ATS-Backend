@@ -86,8 +86,8 @@ module.exports = function(app) {
   });
 
   // Get a Blank by Number
-  app.get('/blanks/number/:type/:number', (req, res) => {
-  	Blank.find({ type: req.params.type, number: req.params.number.toString().padStart(8, "0") }, (err, doc) => {
+  app.get('/blanks/number/:number', (req, res) => {
+  	Blank.find({ number: req.params.number.toString().padStart(8, "0") }, (err, doc) => {
   		if (err) throw err;
   		res.json(doc);
   		console.log("Retrieved Blank by Number");
