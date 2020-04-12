@@ -147,6 +147,11 @@ app.get('/failed', (req, res) => {
 	res.send("Failure!");
 })
 
+app.get('/logout', (req, res) => {
+	req.logout();
+	res.send("Logged Out");
+});
+
 // Get all the blanks
 app.get('/blanks', (req, res) => {
 	Blank.find({}, (err, docs) => {
