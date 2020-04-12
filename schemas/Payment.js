@@ -14,4 +14,10 @@ const Payment = new Schema({
   customerID: { type: mongoose.Schema.Types.ObjectId, ref: 'Customer' }
 });
 
+Payment.statics.findOneOrCreate = function findOneOrCreate(condition, callback) {
+    this.findOne(condition, (err, result) => {
+        return result ? callback(err, result) : this.create(condition, (err, result) => { return callback(err, result) });
+    })
+}
+
 module.exports = mongoose.model("Payment", Payment);

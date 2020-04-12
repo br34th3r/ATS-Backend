@@ -7,7 +7,7 @@ const Blank = new Schema({
     enum: [101, 201, 420, 440, 444, 451, 452],
     default: 101
   },
-  number: Number,
+  number: String,
   isValid: Boolean,
   AgentID: { type: mongoose.Schema.Types.ObjectId, ref: 'Agent' },
   sold: { type: Boolean, default: false }

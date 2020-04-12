@@ -7,6 +7,7 @@ const LocalStrategy = require('passport-local').Strategy;
 const session = require('express-session');
 const bodyParser = require('body-parser');
 const spawn = require('child_process').spawn;
+const fs = require('fs');
 
 // Define Schemas
 const User =  require('./schemas/User');
@@ -14,6 +15,7 @@ const Blank = require('./schemas/Blank');
 const Customer = require('./schemas/Customer');
 const Ticket = require('./schemas/Ticket');
 const Commission = require('./schemas/Commission');
+const Agent = require('./schemas/Agent');
 
 // Start Express Server Instance
 const app = express();
@@ -106,11 +108,6 @@ function isAdmin(req, res, next) {
 	});
 }
 
-app.get('/', (req, res) => {
-	console.log(req.session);
-	res.send(req.session);
-});
-
 // Add a New User
 app.post('/addUser', (req, res) => {
 	if (req.query.username && req.query.password && req.query.access) {
@@ -119,8 +116,17 @@ app.post('/addUser', (req, res) => {
 		  password: req.query.password,
 		  access: req.query.access
 		});
-
 		newUser.save();
+
+		if (req.query.access == "AGENT") {
+			let newAgent = new Agent({
+				name: req.query.name,
+				email: req.query.email,
+				userID: newUser._id
+			});
+
+			newAgent.save();
+		}
 		res.json("Accepted!");
 	}
 });
@@ -151,14 +157,14 @@ app.get('/blanks', (req, res) => {
 });
 
 // Add a Blank
-app.post('/addBlank', (req, res) => {
+app.post('/addBlanks', (req, res) => {
 	if (req.query.type && req.query.start && req.query.end) {
-		for (var i = parseInt(req.query.end); i > req.query.start; i--) {
+		for (var i = parseInt(req.query.end); i >= req.query.start; i--) {
 			let newBlank = new Blank({
 				type: req.query.type,
 			  isValid: true,
 			  AgentID: null,
-				number: i
+				number: i.toString().padStart(8, "0")
 			});
 
 			newBlank.save();
@@ -172,13 +178,15 @@ app.post('/addBlank', (req, res) => {
 app.delete('/removeBlank/:blankID', (req, res) => {
 	Blank.findOne({ _id: req.params.blankID }, (err, doc) => {
 		if (err) throw err;
-		if (doc != []) {
+		if (doc != null) {
 			if (doc.AgentID == null) {
-				Blank.findByIdAndRemove({_id: req.params.blankID}, (err, offer) => {
+				Blank.findByIdAndRemove({_id: doc._id}, (err, offer) => {
 					if (err) throw err;
 					console.log("Blank Removed!");
 					res.send("Blank Removed!");
 				});
+			} else {
+				res.send("Failure, Blank is Assigned!");
 			}
 		}
 	});
@@ -187,12 +195,19 @@ app.delete('/removeBlank/:blankID', (req, res) => {
 // Bulk Remove Blanks
 app.delete('/removeBlanks/:start/:end', (req, res) => {
 	for (var i = parseInt(req.params.start); i <= parseInt(req.params.end); i++) {
-		Blank.findOneAndRemove({ number: i }, (err, offer) => {
+		Blank.findOne({ number: i.toString().padStart(8, "0") }, (err, blank) => {
 			if (err) throw err;
+			if (blank != null) {
+				if (blank.AgentID == null) {
+					Blank.findByIdAndRemove({_id: blank._id}, (err, offer) => {
+						if (err) throw err;
+					});
+				}
+			}
 		});
 	}
-	res.send("Removed Blanks!");
-	console.log("Removed Blanks!");
+	console.log("Removal Terminated!");
+	res.send("Removal Terminated!");
 });
 
 // Get blanks by a type
@@ -204,8 +219,8 @@ app.get('/blanks/type/:type', (req, res) => {
 	});
 });
 
-// Get a Blank
-app.get('/blanks/:blankID', (req, res) => {
+// Get a Blank by ID
+app.get('/blanks/id/:blankID', (req, res) => {
 	Blank.findById(req.params.blankID, (err, doc) => {
 		if (err) throw err;
 		res.json(doc);
@@ -213,10 +228,19 @@ app.get('/blanks/:blankID', (req, res) => {
 	});
 });
 
+// Get a Blank by Number
+app.get('/blanks/number/:type/:number', (req, res) => {
+	Blank.find({ type: req.params.type, number: req.params.number.toString().padStart(8, "0") }, (err, doc) => {
+		if (err) throw err;
+		res.json(doc);
+		console.log("Retrieved Blank by Number");
+	});
+});
+
 // Assign/Reassign a Blank
-app.patch('/blanks/:start/:end/assign/:agentID', (req, res) => {
-	for (var i = parseInt(req.params.end); i >= parseInt(req.params.start); i--) {
-		Blank.updateOne({ number: i }, { AgentID: req.params.agentID });
+app.patch('/blanks/assign/:start/:end/:agentID', (req, res) => {
+	for (var i = parseInt(req.params.end); i <= parseInt(req.params.start); i--) {
+		Blank.updateOne({ number: i.toString().padStart(8, "0") }, { AgentID: req.params.agentID });
 	}
 	res.send("Assigned Blank(s) to Agent!");
 	console.log("Assigned Blank(s) to Agent!")
@@ -276,26 +300,64 @@ app.patch('/customers/:customerID/discount/:discountType', (req, res) => {
 
 // Record a sold ticket
 app.post('/addSoldTicket', (req, res) => {
-	if (req.query.departure && req.query.destination && req.query.saleDate && req.query.blankID && req.query.customerID) {
-		Blank.findById(req.query.blankID, (err, doc) => {
-			if (err) throw err;
-			if(doc.agentID != null) {
-				let newTicket = new Ticket({
-					isValid: true,
-				  departure: req.query.departure,
-				  destination: req.query.destination,
-				  saleDate: req.query.saleDate,
-				  blankID: req.query.blankID,
-				  customerID: req.query.customerID
-				});
+	if (req.query.saleType && req.query.paymentMethod && req.query.blankID && req.query.customerID && req.query.from && req.query.to && req.query.localTax && req.query.commissionID && req.query.saleDate && req.query.payLater) {
+		ExchangeRate.findOne({}, (err, rate) => {
+			if(rate != null) {
+				Customer.findOne({ _id: req.query.customerID }, (err, customer) => {
+					if (customer != null) {
+						Commission.findOne({ _id: req.query.commissionID }, (err, commission) => {
+							if (commission != null) {
+								Blank.findOne({ _id: req.query.blankID }, (err, blank) => {
+									if (blank != null) {
+										Payment.findOneOrCreate({
+											type: req.query.paymentMethod
+										  cardNumber: req.query.cardNumber ? req.query.cardNumber : null,
+										  expiryDate: req.query.cardExpiry ? req.query.cardExpiry : null,
+										  cvc: req.query.cvc ? req.query.cvc : null,
+										  issuer: req.query.cardIssuer ? req.query.cardIssuer : null,
+										  customerID: req.query.customerID
+										}, (err, payment) => {
+											if (err) throw err;
+											if (rate != null) {
+												let newSale = new Sale({
+													saleType: req.query.saleType
+													isPaid: !req.query.payLater,
+													costLocal: req.query.costLocal ? req.query.costLocal : null,
+													costUSD: req.query.costUSD ? req.query.costUSD : null,
+													localTaxes: req.query.localTax,
+													otherTaxes: req.query.otherTax ? req.query.otherTax : null,
+													currentRate: rate._id,
+													commission: commission._id,
+													agentID: req.session.passport.user,
+													paymentID: payment._id,
+													customerID: customer._id,
+													blankID: blank._id
+												});
 
-				newTicket.save();
-				Blank.updateOne({ _id: doc._id }, { sold: true });
-				res.json("New Ticket Added!");
+												newSale.save();
+												res.send("Added new sale!");
+											} else {
+												res.send("Error, Exchange Rate not Found!");
+											}
+										});
+									} else {
+										res.send("Error, Blank not Found!");
+									}
+								});
+							} else {
+								res.send("Error, Commission not Found!");
+							}
+						});
+					else {
+						res.send("Error, Customer not Found!");
+					}
+			});
 			} else {
-				res.json("Blank Cannot be Sold as it Has Not Been Assigned")
+				res.send("Error, Exchange Rate not Found!");
 			}
 		});
+	} else {
+		res.send("Invalid Query!");
 	}
 });
 
@@ -381,10 +443,21 @@ app.get('/database/restore/:backup', (req, res) => {
 	res.send("Finished Restoring!");
 });
 
-app.get('/ticket/:ticketID/refund', (req, res) => {
-	Ticket.findById(req.params.ticketID, (err, doc) => {
-		console.log("Ticket");
-		res.send("Ticket");
+app.post('/ticket/:ticketID/refund', (req, res) => {
+	Ticket.findById(req.params.ticketID, (err, ticket) => {
+		if (err) throw err;
+		if (ticket != null) {
+			let refundData = {
+				datetime: Date.now(),
+				ticketID: req.params.ticketID,
+			}
+			fs.writeFileSync(`/refunds/${req.params.ticketID}`, JSON.stringify(refundData));
+			ticket.isValid = false;
+			ticket.save();
+			res.send("Confirmed Refund!");
+		} else {
+			res.send("Ticket returned Null");
+		}
 	});
 });
 
