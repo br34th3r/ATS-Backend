@@ -15,7 +15,6 @@ module.exports = function(app) {
   		if (req.query.access == "AGENT") {
   			let newAgent = new Agent({
   				name: req.query.name,
-  				email: req.query.email,
   				userID: newUser._id
   			});
 

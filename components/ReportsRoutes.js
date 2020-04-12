@@ -1,3 +1,5 @@
+const fs = require('fs');
+
 module.exports = function(app) {
   // Generate a stock turnover report
   app.post('/stockReport', (req, res) => {
