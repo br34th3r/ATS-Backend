@@ -297,10 +297,15 @@ app.get('/customers/:customerID', (req, res) => {
 });
 
 // Edit discount plan
-app.patch('/customers/:customerID/discount/:discountType', (req, res) => {
-	Customer.findOneAndUpdate({ _id: req.params.customerID }, { discountStatus: req.params.discountType });
-	res.send("Updated Customer Discount Status!");
-	console.log("Updated Customer Discount Status!");
+app.post('/customers/:customerID/discount/:discountType', (req, res) => {
+	Customer.findOneAndUpdate({ _id: req.params.customerID }, { discountStatus: req.params.discountType }, function(err, result) {
+		if (err) {
+      res.send(err);
+    } else {
+			res.send(result);
+			console.log("Updated Customer Discount Status!");
+    }
+  });
 });
 
 // Record a sold ticket
