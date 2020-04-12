@@ -240,7 +240,7 @@ app.get('/blanks/number/:type/:number', (req, res) => {
 // Assign/Reassign a Blank
 app.patch('/blanks/assign/:start/:end/:agentID', (req, res) => {
 	for (var i = parseInt(req.params.end); i <= parseInt(req.params.start); i--) {
-		Blank.updateOne({ number: i.toString().padStart(8, "0") }, { AgentID: req.params.agentID });
+		Blank.findOneAndUpdate({ number: i.toString().padStart(8, "0") }, { AgentID: req.params.agentID });
 	}
 	res.send("Assigned Blank(s) to Agent!");
 	console.log("Assigned Blank(s) to Agent!")
@@ -293,7 +293,7 @@ app.get('/customers/:customerID', (req, res) => {
 
 // Edit discount plan
 app.patch('/customers/:customerID/discount/:discountType', (req, res) => {
-	Customer.updateOne({ _id: req.params.customerID }, { discountStatus: req.params.discountType });
+	Customer.findOneAndUpdate({ _id: req.params.customerID }, { discountStatus: req.params.discountType });
 	res.send("Updated Customer Discount Status!");
 	console.log("Updated Customer Discount Status!");
 });
@@ -310,7 +310,7 @@ app.post('/addSoldTicket', (req, res) => {
 								Blank.findOne({ _id: req.query.blankID }, (err, blank) => {
 									if (blank != null) {
 										Payment.findOneOrCreate({
-											type: req.query.paymentMethod
+											type: req.query.paymentMethod,
 										  cardNumber: req.query.cardNumber ? req.query.cardNumber : null,
 										  expiryDate: req.query.cardExpiry ? req.query.cardExpiry : null,
 										  cvc: req.query.cvc ? req.query.cvc : null,
@@ -320,7 +320,7 @@ app.post('/addSoldTicket', (req, res) => {
 											if (err) throw err;
 											if (rate != null) {
 												let newSale = new Sale({
-													saleType: req.query.saleType
+													saleType: req.query.saleType,
 													isPaid: !req.query.payLater,
 													costLocal: req.query.costLocal ? req.query.costLocal : null,
 													costUSD: req.query.costUSD ? req.query.costUSD : null,
@@ -348,7 +348,7 @@ app.post('/addSoldTicket', (req, res) => {
 								res.send("Error, Commission not Found!");
 							}
 						});
-					else {
+					} else {
 						res.send("Error, Customer not Found!");
 					}
 			});
@@ -407,7 +407,7 @@ app.post('/addCommisionRate', (req, res) => {
 
 // Edit commission rate
 app.patch('/editCommissionRate', (req, res) => {
-	Commission.updateOne({ blankType: req.query.blankType }, { amount: req.query.amount });
+	Commission.findOneAndUpdate({ blankType: req.query.blankType }, { amount: req.query.amount });
 	console.log("Updated Commission Rate!");
 	res.send("Updated Commission Rate!");
 });
@@ -420,25 +420,25 @@ app.get('/database/backup', (req, res) => {
 		console.log("Backed Up!");
   });
   mongodump.stderr.on('data', function (data) {
-    console.log('MongoDump Error: ' + data);
+    console.log(data.toString());
   });
   mongodump.on('exit', function (code) {
-    console.log('mongodump exited with code ' + code);
+    console.log('Finished');
   });
 	res.send("Finished Backing Up!");
 });
 
 app.get('/database/restore/:backup', (req, res) => {
-	var args = [ req.params.backup + "/" ]
+	var args = [ "--drop", req.params.backup + "/" ]
       , mongodump = spawn('/usr/local/bin/mongorestore', args);
   mongodump.stdout.on('data', function (data) {
 		console.log("Restored!");
   });
   mongodump.stderr.on('data', function (data) {
-    console.log('MongoRestore Error: ' + data);
+    console.log(data.toString());
   });
   mongodump.on('exit', function (code) {
-    console.log('mongorestore exited with code ' + code);
+    console.log('Finished');
   });
 	res.send("Finished Restoring!");
 });
