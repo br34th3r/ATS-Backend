@@ -14,7 +14,7 @@ const Customer = new Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Discount',
     default: null
-  }
+  },
   email: String,
   payments: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Payment' }],
   balance: Number
