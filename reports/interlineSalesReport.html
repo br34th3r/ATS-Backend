@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+table, th, td {
+  border: 1px solid black;
+  border-collapse: collapse;
+}
+th, td {
+  padding: 5px;
+  text-align: left;    
+}
+</style>
+</head>
+<body>
+
+<table style="width:100%">
+  <tr>
+    <th>N</th>
+    <th>Original issued number</th>
+    <th>Fare Amount (USD)</th>
+    <th>Fare Amount (Local Currency)</th>
+    <th>Local Taxes</th>
+    <th>Other Taxes</th>
+    <th>Total Documnt's amount</th>
+    <th>Cash</th>
+    <th>Card number</th>
+    <th>Card payment (USD)</th>
+    <th>Card payment (local currency)</th>
+    <th>Total amounts paid</th>
+    <th>Commissions assesable amounts: 9%</th>
+    <th>Non assess. amount</th>
+    <th>Total commissions amount</th>
+    <th>Net amount for agent's debit</th>
+  </tr>
+  <tr>
+    <td>1</td>
+    <td>44400000021 (blank number)</td>
+    <td>250local currency/0.43 (calculate the USD rate from the document)</td>
+    <td>250 (amount in local currency)</td>
+    <td>25.00 (local taxes)</td>
+    <td>35.00 (other taxes)</td>
+    <td>310 (amount in local currency + taxes)</td>
+    <td></td>
+    <td>MC 5301 0234 5698 1234 (card number)</td>
+    <td></td>
+    <td>310 (total amount paid by card in local currency)</td>
+    <td>310 (total amount paid)</td>
+    <td>22.5 ((total amount without taxes 250) * commission rate)</td>
+    <td>60 (local taxes + other taxes)</td>
+  </tr>
+  <tr>
+  	<td>2</td>
+    <td>44400000022</td>
+    <td>300local currency/0.43</td>
+    <td>300</td>
+    <td>28</td>
+    <td>37</td>
+    <td>365</td>
+    <td></td>
+    <td>VISA 7449 1555 4589 3456</td>
+    <td></td>
+    <td>365</td>
+    <td>365</td>
+    <td>27 (total amount without taxes  300) * commission rate</td>
+    <td>65</td>
+  </tr>
+  <tr>
+  	<td>Number of tickets:2</td>
+    <td></td>
+    <td>Sum of fare amount in USD</td>
+    <td>550 (sum of all the tickets in local currency)</td>
+    <td>53 (sum of all the local taxes)</td>
+    <td>72 (sum of all the others taxes)</td>
+    <td>675 (total of the amounts for all the tickets with taxes)</td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td>675 (total of card payments for all the tickets)</td>
+    <td>675 (total ot amounts paid for all the tickets)</td>
+    <td>550 (total of commissions assesable amounts for all the tickets)</td>
+    <td>125 (total of non assess amounts - sum of all taxes)</td>
+    <td>49.5 (total commissions amount)</td>
+    <td>500.5 (total of commissions assesable amounts - total commissions amount)</td>
+  </tr>
+</table>
+</body>
+</html>

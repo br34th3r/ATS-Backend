@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+table, th, td {
+  border: 1px solid black;
+  border-collapse: collapse;
+}
+th, td {
+  padding: 5px;
+  text-align: left;    
+}
+</style>
+</head>
+<body>
+
+<table style="width:100%">
+  <tr>
+    <th>N</th>
+    <th>Original issued number</th>
+    <th>Fare Amount (USD)</th>
+    <th>Fare Amount (Local Currency)</th>
+    <th>Taxes</th>
+    <th>Total Documnt's amount</th>
+    <th>Cash</th>
+    <th>Card number</th>
+    <th>Card payment (USD)</th>
+    <th>Card payment (local currency)</th>
+    <th>Total amounts paid</th>
+    <th>Commissions assesable amounts: 5%</th>
+    <th>Total commissions amount</th>
+    <th>Net amount for agent's debit</th>
+    <th>Total nett amount for banks remittence to 'Air Via'</th>
+  </tr>
+  <tr>
+    <td>1</td>
+    <td>20100000011 (ticket number)</td>
+    <td>75local currency/0.43 (calculate USD rate)</td>
+    <td>75 (fare amount local currency)</td>
+    <td>13.18 (taxes)</td>
+    <td>88.18 (taxes + fare)</td>
+    <td>88.18 (taxes + fare)</td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td>88.18 (taxes + fare)</td>
+    <td>75</td>
+    <td>3.75 (fare amount 75 * commission rate)</td>
+  </tr>
+  <tr>
+  	<td>Number of tickets:1</td>
+    <td></td>
+    <td>Sum of fare amount in USD</td>
+    <td>75 (sum of fares in local currency)</td>
+    <td>13.18 (sum of all the taxes)</td>
+    <td>88.18 (sum of all the taxes + fares)</td>
+    <td>88.18 (sum of all the taxes + fares)</td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td>88.18 (sum of all the taxes + fares)</td>
+    <td>75</td>
+    <td>3.75 (sum of fare amount * commission rate</td>
+    <td>71.25 (total amount without taxes - (sum of fare amount * commission rate))</td>
+    <td>84.43 (sum of all the taxes + fares - (sum of fare amount * commission rate))</td>
+  </tr>
+</table>
+
+</body>
+</html>
