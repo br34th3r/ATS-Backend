@@ -1,3 +1,5 @@
+const fs = require('fs');
+
 const ExchangeRate = require('../schemas/ExchangeRate');
 const Customer = require('../schemas/Customer');
 const Commission = require('../schemas/Commission');
@@ -43,7 +45,17 @@ module.exports = function(app) {
   													blankID: blank._id
   												});
 
+                          let newTicket = new Ticket({
+                            isValid: true,
+                            departure: req.query.from,
+                            destination: req.query.to,
+                            saleDate: Date.now(),
+                            blankID: blank._id,
+                            customerID: customer._id
+                          })
+
   												newSale.save();
+                          newTicket.save();
   												res.send("Added new sale!");
   											} else {
   												res.send("Error, Exchange Rate not Found!");
@@ -81,7 +93,7 @@ module.exports = function(app) {
   				datetime: Date.now(),
   				ticketID: req.params.ticketID,
   			}
-  			fs.writeFileSync(`/refunds/${req.params.ticketID}`, JSON.stringify(refundData));
+  			fs.writeFileSync(`${__dirname}/../refunds/${req.params.ticketID}`, JSON.stringify(refundData));
   			ticket.isValid = false;
   			ticket.save();
   			res.send("Confirmed Refund!");
