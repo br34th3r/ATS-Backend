@@ -4,6 +4,7 @@ const Commission = require('../schemas/Commission');
 const Blank = require('../schemas/Blank');
 const Payment = require('../schemas/Payment');
 const Ticket = require('../schemas/Ticket');
+const Sale = require('../schemas/Sale');
 
 module.exports = function(app) {
   // Record a sold ticket
