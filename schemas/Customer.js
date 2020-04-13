@@ -10,6 +10,11 @@ const Customer = new Schema({
     enum: ["NONE", "FIXED", "FLEXIBLE"],
     default: "NONE"
   },
+  discountId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Discount',
+    default: null
+  }
   email: String,
   payments: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Payment' }],
   balance: Number
