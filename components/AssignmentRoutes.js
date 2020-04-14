@@ -1,4 +1,4 @@
-const Blank = require('../schemas/Blank');
+const Blank = require('../schemas/Blank'); // a variable is created that loads a module that exists in a separate file into the variable.
 
 module.exports = function(app) {
   // Assign/Reassign a Blank
