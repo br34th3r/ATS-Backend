@@ -4,7 +4,10 @@ const mongoose = require('mongoose');
 const passport = require('passport');
 const session = require('express-session');
 const bodyParser = require('body-parser');
+const cookieParser = require('cookie-parser');
 const fs = require('fs');
+const cors = require('cors');
+const MongoStore = require('connect-mongo')(session);
 
 // Grabbing LocalStrategy for Login Functionality
 const LocalStrategy = require('passport-local').Strategy;
@@ -49,12 +52,16 @@ passport.deserializeUser(function(id, done) {
 });
 
 // Express Middleware Initialisation
+app.use(cors());
 app.use(session({
 	secret: "th1rt33n",
-	resave: true,
-	saveUninitialized: true
+  resave: false,
+  saveUninitialized: true,
+  store: new MongoStore({ mongooseConnection: mongoose.connection })
 }));
+app.use(cookieParser());
 app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.json());
 app.use(passport.initialize());
 app.use(passport.session());
 
