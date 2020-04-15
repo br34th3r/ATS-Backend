@@ -3,13 +3,13 @@ const Customer = require('../schemas/Customer');
 module.exports = function(app) {
   // Create a customer account
   app.post('/addCustomer', (req, res) => {
-  	if (req.query.name && req.query.surname && req.query.alias && req.query.email) {
+  	if (req.body.name && req.body.surname && req.body.alias && req.body.email) {
   		let newCustomer = new Customer({
-  			name: req.query.name,
-  		  surname: req.query.surname,
-  		  alias: req.query.alias,
+  			name: req.body.name,
+  		  surname: req.body.surname,
+  		  alias: req.body.alias,
   			customerStatus: false,
-  			email: req.query.email,
+  			email: req.body.email,
   			payments: [],
   			balance: 0
   		});

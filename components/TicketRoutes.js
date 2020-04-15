@@ -11,32 +11,32 @@ const Sale = require('../schemas/Sale');
 module.exports = function(app) {
   // Record a sold ticket
   app.post('/addSoldTicket', (req, res) => {
-  	if (req.query.saleType && req.query.paymentMethod && req.query.blankID && req.query.customerID && req.query.from && req.query.to && req.query.localTax && req.query.commissionID && req.query.saleDate && req.query.payLater) {
+  	if (req.body.saleType && req.body.paymentMethod && req.body.blankID && req.body.customerID && req.body.from && req.body.to && req.body.localTax && req.body.commissionID && req.body.saleDate && req.body.payLater) {
   		ExchangeRate.findOne({}, (err, rate) => {
   			if(rate != null) {
-  				Customer.findOne({ _id: req.query.customerID }, (err, customer) => {
+  				Customer.findOne({ _id: req.body.customerID }, (err, customer) => {
   					if (customer != null) {
-  						Commission.findOne({ _id: req.query.commissionID }, (err, commission) => {
+  						Commission.findOne({ _id: req.body.commissionID }, (err, commission) => {
   							if (commission != null) {
-  								Blank.findOne({ _id: req.query.blankID }, (err, blank) => {
+  								Blank.findOne({ _id: req.body.blankID }, (err, blank) => {
   									if (blank != null) {
   										Payment.findOneOrCreate({
-  											type: req.query.paymentMethod,
-  										  cardNumber: req.query.cardNumber ? req.query.cardNumber : null,
-  										  expiryDate: req.query.cardExpiry ? req.query.cardExpiry : null,
-  										  cvc: req.query.cvc ? req.query.cvc : null,
-  										  issuer: req.query.cardIssuer ? req.query.cardIssuer : null,
-  										  customerID: req.query.customerID
+  											type: req.body.paymentMethod,
+  										  cardNumber: req.body.cardNumber ? req.body.cardNumber : null,
+  										  expiryDate: req.body.cardExpiry ? req.body.cardExpiry : null,
+  										  cvc: req.body.cvc ? req.body.cvc : null,
+  										  issuer: req.body.cardIssuer ? req.body.cardIssuer : null,
+  										  customerID: req.body.customerID
   										}, (err, payment) => {
   											if (err) throw err;
   											if (rate != null) {
   												let newSale = new Sale({
-  													saleType: req.query.saleType,
-  													isPaid: !req.query.payLater,
-  													costLocal: req.query.costLocal ? req.query.costLocal : null,
-  													costUSD: req.query.costUSD ? req.query.costUSD : null,
-  													localTaxes: req.query.localTax,
-  													otherTaxes: req.query.otherTax ? req.query.otherTax : null,
+  													saleType: req.body.saleType,
+  													isPaid: !req.body.payLater,
+  													costLocal: req.body.costLocal ? req.body.costLocal : null,
+  													costUSD: req.body.costUSD ? req.body.costUSD : null,
+  													localTaxes: req.body.localTax,
+  													otherTaxes: req.body.otherTax ? req.body.otherTax : null,
   													currentRate: rate._id,
   													commission: commission._id,
   													agentID: req.session.passport.user,
@@ -47,8 +47,8 @@ module.exports = function(app) {
 
                           let newTicket = new Ticket({
                             isValid: true,
-                            departure: req.query.from,
-                            destination: req.query.to,
+                            departure: req.body.from,
+                            destination: req.body.to,
                             saleDate: Date.now(),
                             blankID: blank._id,
                             customerID: customer._id

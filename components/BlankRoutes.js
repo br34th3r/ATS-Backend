@@ -12,11 +12,10 @@ module.exports = function(app) {
 
   // Add a Blank
   app.post('/addBlanks', (req, res) => {
-    console.log(req.query);
-  	if (req.query.type && req.query.start && req.query.end) {
-  		for (var i = parseInt(req.query.end); i >= req.query.start; i--) {
+  	if (req.body.blankType && req.body.start && req.body.end) {
+  		for (var i = parseInt(req.body.end); i >= req.body.start; i--) {
   			let newBlank = new Blank({
-  				type: req.query.type,
+  				type: req.body.blankType,
   			  isValid: true,
   			  AgentID: null,
   				number: i.toString().padStart(8, "0")
