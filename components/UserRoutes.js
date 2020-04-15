@@ -4,17 +4,17 @@ const Agent = require('../schemas/Agent');
 module.exports = function(app) {
   // Add a New User
   app.post('/addUser', (req, res) => {
-  	if (req.query.username && req.query.password && req.query.access) {
+  	if (req.body.username && req.body.password && req.body.access) {
   		let newUser = new User({
-  			username: req.query.username,
-  		  password: req.query.password,
-  		  access: req.query.access
+  			username: req.body.username,
+  		  password: req.body.password,
+  		  access: req.body.access
   		});
   		newUser.save();
 
-  		if (req.query.access == "AGENT") {
+  		if (req.body.access == "AGENT") {
   			let newAgent = new Agent({
-  				name: req.query.name,
+  				name: req.body.name,
   				userID: newUser._id
   			});
 

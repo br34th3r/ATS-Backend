@@ -37,10 +37,10 @@ module.exports = function(app) {
 
   // Add an Exchange Rate
   app.post('/addExchangeRate', (req, res) => {
-    if(req.query.currencyCode && req.query.rate) {
+    if(req.body.currencyCode && req.body.rate) {
       let newRate = new ExchangeRate({
-        currencyCode: req.query.currencyCode,
-        rate: req.query.rate,
+        currencyCode: req.body.currencyCode,
+        rate: req.body.rate,
         dateAdded: Date.now()
       });
 
