@@ -15,15 +15,17 @@ module.exports = function(app) {
   		});
 
   		newCustomer.save();
-  		res.json("New Customer Added!");
-  	}
+  		res.status(200).json({ ok: true });
+  	} else {
+      res.status(400).josn({ errors: "Invalid Query!" })
+    }
   });
 
   // Get all the customers
   app.get('/customers', (req, res) => {
   	Customer.find({}, (err, docs) => {
   		if (err) throw err;
-  		res.send(docs);
+  		res.send({ok: true, customers: docs });
   		console.log("Returned All Customers!");
   	});
   });
