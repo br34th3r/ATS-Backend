@@ -5,23 +5,25 @@ module.exports = function(app) {
   app.patch('/blanks/assign/:start/:end/:agentID', (req, res) => {
   	for (var i = parseInt(req.params.end); i >= parseInt(req.params.start); i--) {
   		Blank.findOne({ number: i.toString().padStart(8, "0") }, (err, doc) => {
-        if (err) throw err;
+        if (err) { res.status(400).json({ errors: err }); }
         if (doc != null) {
           doc.AgentID = (req.params.agentID != "NULL") ? req.params.agentID : null;
           doc.save();
         }
       });
   	}
-  	res.send("Assigned Blank(s) to Agent!");
+  	res.status(200).json({ ok: true });
   	console.log("Assigned Blank(s) to Agent!")
   });
 
   // Get Blanks assigned to the travel agent
   app.get('/blanks/getAssigned/:agentID', (req, res) => {
   	Blank.find({ AgentID: req.params.agentID }, (err, docs) => {
-  		if (err) throw err;
-  		res.json(docs);
-  		console.log("Sent Agent Blanks!");
+  		if (err) { res.status(400).json({ errors: err }); }
+  		else {
+        res.json(docs);
+  		  console.log("Sent Agent Blanks!");
+      }
   	});
   });
 }
