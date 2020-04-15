@@ -1,0 +1,1 @@
+{"options":{},"indexes":[{"v":{"$numberInt":"2"},"key":{"_id":{"$numberInt":"1"}},"name":"_id_","ns":"ats-db.users"}],"uuid":"70b4d7a5dbaa4be1ac99d13ae3f52b80"}

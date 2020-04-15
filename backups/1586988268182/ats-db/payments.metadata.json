@@ -1,0 +1,1 @@
+{"options":{},"indexes":[{"v":{"$numberInt":"2"},"key":{"_id":{"$numberInt":"1"}},"name":"_id_","ns":"ats-db.payments"}],"uuid":"0958a334cec44b00a267d292147df6cd"}
