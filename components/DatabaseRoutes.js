@@ -49,10 +49,10 @@ module.exports = function(app) {
       });
 
       newRate.save();
-      res.send("Added New Exchange Rate!");
-      console.log("Added New Exchange Rate!")
+      res.status(200).json({ ok: true });
+      console.log("Added New Exchange Rate!");
     } else {
-      res.send("Invalid Query!");
+      res.status(400).json({ errors: "Invalid Query!" });
     }
   });
 }

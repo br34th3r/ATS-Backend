@@ -2,28 +2,28 @@ const Blank = require('../schemas/Blank'); // a variable is created that loads a
 
 module.exports = function(app) {
   // Assign/Reassign a Blank
-  app.patch('/blanks/assign/:start/:end/:agentID', (req, res) => {
-  	for (var i = parseInt(req.params.end); i >= parseInt(req.params.start); i--) {
-  		Blank.findOne({ number: i.toString().padStart(8, "0") }, (err, doc) => {
+  app.patch('/blanks/assign', (req, res) => {
+    if(req.body.start && req.body.end && req.body.agentID) {
+      Blank.updateMany({ number: {$lte: req.body.end, $gte: req.body.start }}, { AgentID: req.body.agentID }, (err, doc) => {
         if (err) { res.status(400).json({ errors: err }); }
-        if (doc != null) {
-          doc.AgentID = (req.params.agentID != "NULL") ? req.params.agentID : null;
-          doc.save();
-        }
       });
-  	}
-  	res.status(200).json({ ok: true });
-  	console.log("Assigned Blank(s) to Agent!")
-  });
+    } else {
+      res.status(400).json({ errors: "Invalid Query!" });
+    }
+  })
 
   // Get Blanks assigned to the travel agent
-  app.get('/blanks/getAssigned/:agentID', (req, res) => {
-  	Blank.find({ AgentID: req.params.agentID }, (err, docs) => {
-  		if (err) { res.status(400).json({ errors: err }); }
-  		else {
-        res.json(docs);
-  		  console.log("Sent Agent Blanks!");
-      }
-  	});
+  app.get('/blanks/getAssigned', (req, res) => {
+    if (req.body.agentID) {
+    	Blank.find({ AgentID: req.body.agentID }, (err, docs) => {
+    		if (err) { res.status(400).json({ errors: err }); }
+    		else {
+          res.status(200).json({ ok: true, blanks: docs });
+    		  console.log("Sent Agent Blanks!");
+        }
+    	});
+    } else {
+      res.status(400).json({ errors: "Invalid Query!" });
+    }
   });
 }

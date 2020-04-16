@@ -4,7 +4,7 @@ module.exports = {
   	if(req.session.passport){
   		next();
   	} else {
-  		res.send("Failure Unauthorised!");
+  		res.status(400).json({ errors: "Failure Unauthorised!" });
   	}
   },
 
@@ -14,7 +14,7 @@ module.exports = {
   		if (doc.access == "AGENT") {
   			next();
   		} else {
-  			res.send("Failure, Unauthorised Access!");
+  			res.status(400).json({ errors: "Failure, you are not an agent!" });
   		}
   	});
   },
@@ -25,7 +25,7 @@ module.exports = {
   		if (doc.access == "MANAGER") {
   			next();
   		} else {
-  			res.send("Failure, Unauthorised Access!");
+  			res.status(400).json({ errors: "Failure, you are not a manager!" });
   		}
   	});
   },
@@ -37,7 +37,7 @@ module.exports = {
   		if (doc.access == "ADMIN") {
   			next();
   		} else {
-  			res.send("Failure, Unauthorised Access!");
+  			res.status(400).json({ errors: "Failure, you are not an admin!" });
   		}
   	});
   }

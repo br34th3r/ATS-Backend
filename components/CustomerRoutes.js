@@ -17,37 +17,42 @@ module.exports = function(app) {
   		newCustomer.save();
   		res.status(200).json({ ok: true });
   	} else {
-      res.status(400).josn({ errors: "Invalid Query!" })
+      res.status(400).json({ errors: "Invalid Query!" })
     }
   });
 
   // Get all the customers
   app.get('/customers', (req, res) => {
+    console.log(req)
   	Customer.find({}, (err, docs) => {
-  		if (err) throw err;
-  		res.send({ok: true, customers: docs });
+  		if (err) { res.status(400).json({ errors: err }); }
+  		res.status(200).json({ ok: true, customers: docs });
   		console.log("Returned All Customers!");
   	});
   });
 
   // Get a customer
-  app.get('/customers/getById/:customerID', (req, res) => {
-  	Customer.findById(req.params.customerID, (err, doc) => {
-  		if (err) throw err;
-  		res.json(doc);
-  		console.log("Returned Customer by ID");
-  	});
+  app.get('/customers/getById', (req, res) => {
+    if (req.body.customerID) {
+      Customer.findById(req.body.customerID, (err, doc) => {
+    		if (err) { res.status(400).json({ errors: err }); }
+    		res.status(200).json({ ok: true, customer: doc });
+    		console.log("Returned Customer by ID");
+    	});
+    } else {
+      res.status(400).json({ errors: "Invalid Query!" });
+    }
   });
 
   // Edit discount plan
-  app.post('/customers/editDiscount/:customerID/discount/:discountType', (req, res) => {
-		Customer.findOneAndUpdate({ _id: req.params.customerID }, { discountStatus: req.params.discountType }, function(err, result) {
-			if (err) {
-				res.send(err);
-			} else {
-				res.send(result);
-				console.log("Updated Customer Discount Status!");
-			}
-		});
+  app.post('/customers/editDiscount', (req, res) => {
+    if (req.body.customerID && req.body.discountType) {
+      Customer.findOneAndUpdate({ _id: req.body.customerID }, { discountStatus: req.body.discountType }, function(err, result) {
+  			if (err) { res.status(400).json({ errors: err }); }
+        res.status(200).json({ ok: true });
+  		});
+    } else {
+      res.status(400).json({ errors: "Invalid Query!" });
+    }
   });
 }

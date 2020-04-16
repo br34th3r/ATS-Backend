@@ -20,7 +20,9 @@ module.exports = function(app) {
 
   			newAgent.save();
   		}
-  		res.json("Accepted!");
-  	}
+  		res.status(200).json({ ok: true });
+  	} else {
+      res.status(400).json({ errors: "Invalid Query!" });
+    }
   });
 }

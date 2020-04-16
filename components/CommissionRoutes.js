@@ -11,16 +11,22 @@ module.exports = function(app) {
 
   		newCommission.save();
   		console.log("Added New Commission!");
-  		res.send("Added new Commission!");
-  	}
+  		res.status(200).json({ ok: true });
+  	} else {
+      res.status(400).json({ errors: "Invalid Query!" });
+    }
   });
 
   // Edit commission rate
   app.post('/editCommissionRate', (req, res) => {
-		Commission.findOneAndUpdate({ blankType: req.body.blankType }, { percentage: req.body.percentage }, function(err, result) {
-			if (err) throw err;
-			res.send(result);
-			console.log("Updated Commission Rate!");
-		});
+    if (req.body.blankType && req.body.percentage) {
+      Commission.findOneAndUpdate({ blankType: req.body.blankType }, { percentage: req.body.percentage }, function(err, result) {
+  			if (err) throw err;
+  			res.status(200).json({ ok: true });
+  			console.log("Updated Commission Rate!");
+  		});
+    } else {
+      res.status(400).json({ errors: "Invalid Query!" });
+    }
   });
 }
