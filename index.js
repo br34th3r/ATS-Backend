@@ -42,26 +42,27 @@ passport.use(new LocalStrategy((username, password, done) => {
 }));
 
 passport.serializeUser(function(user, done) {
-  done(null, user);
+  done(null, user._id);
 });
 
-passport.deserializeUser(function(user, done) {
-  User.findById(user._id, function(err, user) {
+passport.deserializeUser(function(id, done) {
+  User.findById(id, function(err, user) {
     done(err, user);
   });
 });
 
 // Express Middleware Initialisation
-app.use(cors());
 app.use(session({
 	secret: "th1rt33n",
   resave: false,
   saveUninitialized: true,
+  cookie : {
+    maxAge: 3600000 // see below
+  },
   store: new MongoStore({ mongooseConnection: mongoose.connection })
 }));
-app.use(cookieParser());
-app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: false }));
 app.use(passport.initialize());
 app.use(passport.session());
 
