@@ -17,7 +17,6 @@ module.exports = function(app, passport) {
   });
 
   app.post('/loginSuccess', (req, res) => {
-    console.log(req.session);
     res.status(200).json({ ok: true, session: req.session.passport.user });
   });
 
