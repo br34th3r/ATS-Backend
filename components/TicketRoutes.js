@@ -40,7 +40,7 @@ module.exports = function(app) {
     													otherTaxes: req.body.otherTax ? req.body.otherTax : null,
     													currentRate: rate._id,
     													commission: commission._id,
-    													agentID: req.session..userID,
+    													agentID: req.session.userID,
     													paymentID: payment._id,
     													customerID: customer._id,
     													blankID: blank._id
