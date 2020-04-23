@@ -52,6 +52,7 @@ passport.deserializeUser(function(id, done) {
 });
 
 // Express Middleware Initialisation
+app.use(cookieParser());
 app.use(session({
 	secret: "th1rt33n",
   resave: false,
