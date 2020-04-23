@@ -33,7 +33,10 @@ module.exports = function(app) {
   // Bulk Remove Blanks
   app.delete('/removeBlanks', (req, res) => {
 	  if (req.body.start && req.body.end && req.body.blankType) {
-			Blank.deleteMany({ type: req.body.blankType, AgentID: null, number: { $lte: req.body.end, $gte: req.body.start }}, (err, blanks) => {
+			Blank.deleteMany({ type: req.body.blankType,
+                          AgentID: null,
+                          number: { $lte: req.body.end, $gt: req.body.start - 1 }
+                        }, (err, status) => {
         if (err) { res.status(400).json({ errors: err }) };
 				res.status(200).json({ ok: true });
 			});
