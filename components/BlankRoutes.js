@@ -1,4 +1,5 @@
 const Blank = require('../schemas/Blank');
+const Ticket = require('../schemas/Ticket');
 
 module.exports = function(app) {
   // Get all the blanks
@@ -48,14 +49,14 @@ module.exports = function(app) {
   // Find a Blank by Type and Number
   app.post('/blanks/find', (req, res) => {
     if(req.body.blankNumber && req.body.blankType) {
-      Blank.find({ type: req.body.blankType, number: req.body.number.toString().padStart(8, "0") }, (err, doc) => {
-    		if (err) { res.status(400).json({ errors: err }); return; }
-        if (!blank) { res.status(400).json({ errors: "Blank not Found!" }); return; }
+      console.log(req.body.blankNumber.toString().padStart(8, "0"));
+      Blank.findOne({ type: req.body.blankType, number: req.body.blankNumber.toString().padStart(8, "0") }, (err, doc) => {
+    		if (err) { res.status(400).json({ errors: err }); return null; }
+        if (!doc) { res.status(400).json({ errors: "Blank not Found!" }); return null; }
         Ticket.findOne({ blankID: doc._id }, (err, ticket) => {
-          if (err) { res.status(400).json({ errors: err }); return; }
-          if (!ticket) { res.status(400).json({ errors: "No Ticket Matching this Blank" }); return; }
+          if (err) { res.status(400).json({ errors: err }); return null; }
+          if (!ticket) { res.status(400).json({ errors: "No Ticket Matching this Blank" }); return null; }
           res.status(200).json({ ok: true, ticket: ticket });
-          console.log('Retrieved Ticket!');
         });
     	});
     } else {
