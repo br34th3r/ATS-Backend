@@ -7,7 +7,12 @@ module.exports = function(app) {
       if (sales != []) {
         console.log("LATE PAYMENTS");
         sales.map((sale) => {
-          console.log(`SALE // Blank ID: ${sale.blankID}, Sale Date: ${sale.saleDate}`);
+          let saleDate = new Date(sale.saleDate);
+          let now = Date.now();
+          let dateDifference = ((((now - saleDate) / 1000) / 60) / 60) / 24;
+          if (dateDifference > 30 ) {
+            console.log(`SALE // Blank ID: ${sale.blankID}, Sale Date: ${sale.saleDate}`);
+          }
         });
       } else {
         console.log("Sales all Paid, Will run again in 12 Hours!");
