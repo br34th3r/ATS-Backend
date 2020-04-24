@@ -37,6 +37,7 @@ module.exports = function(app) {
     													costLocal: req.body.costLocal ? req.body.costLocal : null,
     													costUSD: req.body.costUSD ? req.body.costUSD : null,
     													localTaxes: req.body.localTax,
+                              saleDate: Date.now(),
     													otherTaxes: req.body.otherTax ? req.body.otherTax : null,
     													currentRate: rate._id,
     													commission: commission._id,
@@ -45,17 +46,17 @@ module.exports = function(app) {
     													customerID: customer._id,
     													blankID: blank._id
     												});
+                            newSale.save();
 
                             let newTicket = new Ticket({
                               isValid: true,
                               departure: req.body.from,
                               destination: req.body.to,
-                              saleDate: Date.now(),
                               blankID: blank._id,
-                              customerID: customer._id
+                              customerID: customer._id,
+                              saleID: newSale._id
                             })
 
-    												newSale.save();
                             newTicket.save();
     												res.status(200).json({ ok: true });
       										});
