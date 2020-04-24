@@ -12,6 +12,7 @@ const Sale = new Schema({
   costUSD: Number,
   localTaxes: Number,
   otherTaxes: Number,
+  saleDate: Date,
   currentRate: { type: mongoose.Schema.Types.ObjectId, ref: 'ExchangeRate' },
   commission: { type: mongoose.Schema.Types.ObjectId, ref: "Commission" },
   agentID: { type: mongoose.Schema.Types.ObjectId, ref: "Agent" },

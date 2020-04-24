@@ -92,14 +92,18 @@ module.exports = function(app) {
       Ticket.findById(req.body.ticketID, (err, ticket) => {
     		if (err) { res.status(400).json({ errors: err }) };
     		if (ticket != null) {
-    			let refundData = {
-    				datetime: Date.now(),
-    				ticketID: req.body.ticketID,
-    			}
-    			fs.writeFileSync(`${__dirname}/../refunds/${req.body.ticketID}`, JSON.stringify(refundData));
-    			ticket.isValid = false;
-    			ticket.save();
-    			res.status(200).json({ ok: true });
+          if (ticket.isValid == true) {
+      			let refundData = {
+      				datetime: Date.now(),
+      				ticketID: req.body.ticketID,
+      			}
+      			fs.writeFileSync(`${__dirname}/../refunds/${req.body.ticketID}.log`, JSON.stringify(refundData));
+      			ticket.isValid = false;
+      			ticket.save();
+      			res.status(200).json({ ok: true });
+          } else {
+            res.status(400).json({ errors: "Ticket is Invalid!" });
+          }
     		} else {
     			res.status(400).json({ errors: "Ticket returned Null" });
     		}
@@ -107,5 +111,24 @@ module.exports = function(app) {
     } else {
       res.status(400).json({ errors: "Invalid Query!" });
     }
+  });
+
+  app.get('/getLatePayments', (req, res) => {
+    let resJson = [];
+    Sale.find({ isPaid: false }, (err, sales) => {
+      if (err) { res.status(400).json({ errors: err })}
+      sales.map((sale) => {
+        Blank.findById(sale.blankID, (err, blank) => {
+          Customer.findById(sale.customerID, (err, customer) => {
+            resJson.append({
+              customerName: `${customer.name} ${customer.surname}`,
+              blankType: blank.type,
+              blankNumber: blank.number
+            });
+          });
+        });
+      });
+      res.status(200).json({ ok: true, sales: resJson });
+    });
   });
 }
