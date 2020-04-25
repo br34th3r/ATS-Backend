@@ -3,8 +3,8 @@ const Blank = require('../schemas/Blank'); // a variable is created that loads a
 module.exports = function(app) {
   // Assign/Reassign a Blank
   app.post('/blanks/assign', (req, res) => {
-    if(req.body.blankType && req.body.agentID && req.body.blankNumber) {
-      Blank.updateMany({ type: req.body.blankType, number: req.body.blankNumber }, { AgentID: req.body.agentID }, (err, doc) => {
+    if(req.body.blankType && req.body.agentID && req.body.start && req.body.end) {
+      Blank.updateMany({ type: req.body.blankType, number: { $lte: req.body.end, $gt: req.body.start - 1 } }, { AgentID: req.body.agentID }, (err, doc) => {
         if (err) { res.status(400).json({ errors: err }); }
         res.status(200).json({ ok: true });
       });
