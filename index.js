@@ -52,6 +52,7 @@ passport.deserializeUser(function(id, done) {
 });
 
 // Express Middleware Initialisation
+app.use(cookieParser());
 app.use(session({
 	secret: "th1rt33n",
   resave: false,
@@ -84,6 +85,7 @@ require('./components/TicketRoutes.js')(app);
 require('./components/ReportsRoutes.js')(app);
 require('./components/CommissionRoutes.js')(app);
 require('./components/DatabaseRoutes.js')(app);
+require('./components/TimeEvents.js')(app);
 
 // Server setup to listen on a predefined port
 app.listen(process.env.PORT, process.env.HOST);
