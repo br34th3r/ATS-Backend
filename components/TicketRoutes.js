@@ -37,6 +37,7 @@ module.exports = function(app) {
     													costLocal: req.body.costLocal ? req.body.costLocal : null,
     													costUSD: req.body.costUSD ? req.body.costUSD : null,
     													localTaxes: req.body.localTax,
+                              saleDate: Date.now(),
     													otherTaxes: req.body.otherTax ? req.body.otherTax : null,
     													currentRate: rate._id,
     													commission: commission._id,
@@ -45,17 +46,17 @@ module.exports = function(app) {
     													customerID: customer._id,
     													blankID: blank._id
     												});
+                            newSale.save();
 
                             let newTicket = new Ticket({
                               isValid: true,
                               departure: req.body.from,
                               destination: req.body.to,
-                              saleDate: Date.now(),
                               blankID: blank._id,
-                              customerID: customer._id
+                              customerID: customer._id,
+                              saleID: newSale._id
                             })
 
-    												newSale.save();
                             newTicket.save();
     												res.status(200).json({ ok: true });
       										});
@@ -92,14 +93,18 @@ module.exports = function(app) {
       Ticket.findById(req.body.ticketID, (err, ticket) => {
     		if (err) { res.status(400).json({ errors: err }) };
     		if (ticket != null) {
-    			let refundData = {
-    				datetime: Date.now(),
-    				ticketID: req.body.ticketID,
-    			}
-    			fs.writeFileSync(`${__dirname}/../refunds/${req.body.ticketID}`, JSON.stringify(refundData));
-    			ticket.isValid = false;
-    			ticket.save();
-    			res.status(200).json({ ok: true });
+          if (ticket.isValid == true) {
+      			let refundData = {
+      				datetime: Date.now(),
+      				ticketID: req.body.ticketID,
+      			}
+      			fs.writeFileSync(`${__dirname}/../refunds/${req.body.ticketID}.log`, JSON.stringify(refundData));
+      			ticket.isValid = false;
+      			ticket.save();
+      			res.status(200).json({ ok: true });
+          } else {
+            res.status(400).json({ errors: "Ticket is Invalid!" });
+          }
     		} else {
     			res.status(400).json({ errors: "Ticket returned Null" });
     		}
@@ -107,5 +112,24 @@ module.exports = function(app) {
     } else {
       res.status(400).json({ errors: "Invalid Query!" });
     }
+  });
+
+  app.get('/getLatePayments', (req, res) => {
+    let resJson = [];
+    Sale.find({ isPaid: false }, (err, sales) => {
+      if (err) { res.status(400).json({ errors: err })}
+      sales.map((sale) => {
+        Blank.findById(sale.blankID, (err, blank) => {
+          Customer.findById(sale.customerID, (err, customer) => {
+            resJson.append({
+              customerName: `${customer.name} ${customer.surname}`,
+              blankType: blank.type,
+              blankNumber: blank.number
+            });
+          });
+        });
+      });
+      res.status(200).json({ ok: true, sales: resJson });
+    });
   });
 }
