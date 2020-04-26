@@ -19,7 +19,7 @@ module.exports = function(app) {
   				type: req.body.blankType,
   			  isValid: true,
   			  AgentID: null,
-  				number: i.toString().padStart(8, "0")
+  				number: i
   			});
 
   			newBlank.save();
@@ -49,8 +49,7 @@ module.exports = function(app) {
   // Find a Blank by Type and Number
   app.post('/blanks/find', (req, res) => {
     if(req.body.blankNumber && req.body.blankType) {
-      console.log(req.body.blankNumber.toString().padStart(8, "0"));
-      Blank.findOne({ type: req.body.blankType, number: req.body.blankNumber.toString().padStart(8, "0") }, (err, doc) => {
+      Blank.findOne({ type: req.body.blankType, number: req.body.blankNumber }, (err, doc) => {
     		if (err) { res.status(400).json({ errors: err }); return null; }
         if (!doc) { res.status(400).json({ errors: "Blank not Found!" }); return null; }
         Ticket.findOne({ blankID: doc._id }, (err, ticket) => {

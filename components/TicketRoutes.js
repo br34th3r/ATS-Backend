@@ -21,7 +21,7 @@ module.exports = function(app) {
                 if (agent != null) {
                   Commission.findOne({ blankType: req.body.blankType }, (err, commission) => {
       							if (commission != null) {
-      								Blank.findOne({ type: req.body.blankType, number: req.body.blankNumber.toString().padStart(8, "0") }, (err, blank) => {
+      								Blank.findOne({ type: req.body.blankType, number: req.body.blankNumber }, (err, blank) => {
       									if (blank != null) {
       										Payment.findOneOrCreate({
       											type: req.body.paymentMethod,
