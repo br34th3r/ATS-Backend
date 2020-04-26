@@ -54,7 +54,7 @@ passport.deserializeUser(function(id, done) {
 // Express Middleware Initialisation
 app.use(cookieParser());
 app.use(session({
-	secret: "th1rt33n",
+	secret: process.env.SESSION_SECRET,
   resave: false,
   saveUninitialized: true,
   cookie : {
