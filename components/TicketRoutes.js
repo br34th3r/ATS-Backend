@@ -2,6 +2,7 @@ const fs = require('fs');
 
 const ExchangeRate = require('../schemas/ExchangeRate');
 const Customer = require('../schemas/Customer');
+const User = require('../schemas/User');
 const Commission = require('../schemas/Commission');
 const Blank = require('../schemas/Blank');
 const Payment = require('../schemas/Payment');
@@ -16,7 +17,7 @@ module.exports = function(app) {
   			if(rate != null) {
   				Customer.findOne({ _id: req.body.customerID }, (err, customer) => {
   					if (customer != null) {
-              Agent.findOne({ userID: req.session.user._id }, (err, agent) => {
+              User.findOne({ _id: req.body.user }, (err, agent) => {
                 if (agent != null) {
                   Commission.findOne({ blankType: req.body.blankType }, (err, commission) => {
       							if (commission != null) {
@@ -28,7 +29,7 @@ module.exports = function(app) {
       										  expiryDate: req.body.cardExpiry ? req.body.cardExpiry : null,
       										  cvc: req.body.cvc ? req.body.cvc : null,
       										  issuer: req.body.cardIssuer ? req.body.cardIssuer : null,
-      										  customerID: req.body.customerID
+      										  customerID: customer._id
       										}, (err, payment) => {
       											if (err) { res.status(400).json({ errors: err }); }
     												let newSale = new Sale({
@@ -41,7 +42,7 @@ module.exports = function(app) {
     													otherTaxes: req.body.otherTax ? req.body.otherTax : null,
     													currentRate: rate._id,
     													commission: commission._id,
-    													agentID: req.session.user._id,
+    													agentID: agent._id,
     													paymentID: payment._id,
     													customerID: customer._id,
     													blankID: blank._id
