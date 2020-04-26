@@ -23,7 +23,6 @@ module.exports = function(app) {
 
   // Get all the customers
   app.get('/customers', (req, res) => {
-    console.log(req);
   	Customer.find({}, (err, docs) => {
   		if (err) { res.status(400).json({ errors: err }); }
   		res.status(200).json({ ok: true, customers: docs });
